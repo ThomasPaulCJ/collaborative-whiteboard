@@ -1,19 +1,24 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import cors from 'cors'; // Import the cors package if not already there
 
 const app = express();
 const httpServer = createServer(app);
+
+// Use the environment variable for the client URL
+// Fallback to localhost for local development
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+
 const io = new Server(httpServer, {
   cors: {
-    // IMPORTANT: Replace this with your Vercel client's public URL once deployed!
-    // For local testing, it can stay http://localhost:3000 for now.
-    origin: 'https://your-vercel-client.vercel.app', // <-- REPLACE THIS
+    origin: clientUrl, // Use the dynamic clientUrl here
     methods: ['GET', 'POST'],
   },
 });
 
-const port = 5000;
+// Use the port provided by the environment, or default to 5000 for local development
+const port = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
   res.send('Hello from the server!');
@@ -30,5 +35,6 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`); // Log the actual port being used
+  console.log(`CORS origin set to: ${clientUrl}`); // Log the CORS origin for verification
 });
