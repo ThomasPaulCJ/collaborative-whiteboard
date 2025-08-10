@@ -11,7 +11,7 @@ const App: React.FC = () => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io('https://collaborative-whiteboard-server.onrender.com');
     socketRef.current = socket;
 
     socket.on('connect', () => {

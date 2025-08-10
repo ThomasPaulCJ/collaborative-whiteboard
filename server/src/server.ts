@@ -1,5 +1,3 @@
-// server/src/server.ts
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -8,7 +6,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    // IMPORTANT: Replace this with your Vercel client's public URL once deployed!
+    // For local testing, it can stay http://localhost:3000 for now.
+    origin: 'https://your-vercel-client.vercel.app', // <-- REPLACE THIS
     methods: ['GET', 'POST'],
   },
 });
@@ -21,13 +21,9 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
-
-  // This is the listener that receives drawing data from one client
   socket.on('drawing', (data) => {
-    // This is the broadcast that sends the data to all other clients
     socket.broadcast.emit('drawing', data);
   });
-
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
