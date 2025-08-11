@@ -1,18 +1,17 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import cors from 'cors'; // Import the cors package if not already there
+import cors from 'cors'; // Ensure cors is imported
 
 const app = express();
 const httpServer = createServer(app);
 
-// Use the environment variable for the client URL
-// Fallback to localhost for local development
+// Use the environment variable for the client URL, fallback to localhost for local dev
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
 
 const io = new Server(httpServer, {
   cors: {
-    origin: clientUrl, // Use the dynamic clientUrl here
+    origin: clientUrl, // This should be your Vercel client URL (e.g., https://your-vercel-app.vercel.app)
     methods: ['GET', 'POST'],
   },
 });
@@ -26,15 +25,27 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
+  
+  // Listener for drawing data: receives from one client, broadcasts to others
   socket.on('drawing', (data) => {
     socket.broadcast.emit('drawing', data);
   });
+  
+  // *** THIS IS THE CRUCIAL PART FOR "CLEAR ALL" ***
+  // Listener for clear whiteboard event: receives from one client, broadcasts to others
+  socket.on('clearWhiteboard', () => {
+    console.log('Whiteboard cleared by:', socket.id);
+    // Broadcast the 'clearWhiteboard' event to all other connected clients
+    socket.broadcast.emit('clearWhiteboard'); 
+  });
+
+  // Listener for disconnect event
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
 
 httpServer.listen(port, () => {
-  console.log(`Server is running on port ${port}`); // Log the actual port being used
-  console.log(`CORS origin set to: ${clientUrl}`); // Log the CORS origin for verification
+  console.log(`Server is running on port ${port}`);
+  console.log(`CORS origin set to: ${clientUrl}`);
 });
